@@ -1,6 +1,6 @@
 "use client";
 import axios from "axios";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Todo, UpdateTodo } from "./schema";
 
 export default function Home() {
@@ -12,6 +12,11 @@ export default function Home() {
   // const urls = {
   //   todos: "http://127.0.0.1:8000/todos",
   // };
+
+  //初期画面でTodo一覧を取得
+  useEffect(() => {
+    getTodos();
+  }, [setTodos]);
 
   //  changeText関数
   const changeText = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -51,39 +56,6 @@ export default function Home() {
     setDate("");
   };
 
-  // //  Todoの編集
-  // const editTodo = (id: number, content: string) => {
-  //   //  todosオブジェクトの中身を書き換えないようにmap()を使ってディープコピー
-  //   const copyTodo = todos.map((todo) => ({ ...todo }));
-  //   console.log(copyTodo);
-
-  //   // todosを更新
-  //   const newTodos = copyTodo.map((todo) => {
-  //     if (todo.id === id) {
-  //       todo.content = content;
-  //     }
-  //     return todo;
-  //   });
-
-  //   setTodos(newTodos);
-  // };
-
-  // //  期日の編集
-  // const editDate = (id: number, deadline: string) => {
-  //   //
-  //   const copyDate = todos.map((todo) => ({ ...todo }));
-  //   console.log(copyDate);
-
-  //   const newDate = copyDate.map((todo) => {
-  //     if (todo.id === id) {
-  //       todo.deadline = deadline;
-  //     }
-  //     return todo;
-  //   });
-
-  //   setTodos(newDate);
-  // };
-
   //  Todoの削除
   const deleteTodo = (id: number) => {
     axios
@@ -98,7 +70,7 @@ export default function Home() {
 
   //  今日の日付を取得
   const nowDate = new Date();
-  const nowDateString =
+  const nowDateTypeString =
     nowDate.getFullYear() +
     "-" +
     ("0" + (nowDate.getMonth() + 1)).slice(-2) +
@@ -121,7 +93,7 @@ export default function Home() {
           <input
             className="inputText"
             type="date"
-            min={nowDateString}
+            min={nowDateTypeString}
             value={date}
             onChange={changeDate}
           />
@@ -146,16 +118,12 @@ export default function Home() {
           <ul>
             {todos.map((todo) => (
               <li key={todo.id}>
-                <input
-                  type="text"
-                  value={todo.content}
-                  // onChange={(e) => editTodo(todo.id, e.target.value)}
-                />
+                <input type="text" value={todo.content} readOnly />
                 <input
                   type="date"
-                  min={nowDateString}
+                  min={nowDateTypeString}
                   value={todo.deadline}
-                  // onChange={(e) => editDate(todo.id, e.target.value)}
+                  readOnly
                 />
 
                 <button
@@ -166,16 +134,6 @@ export default function Home() {
                 >
                   ✖
                 </button>
-
-                {/* Todoの編集 */}
-                {/* <button
-                  onClick={() => {
-                    editTodo(todo.id, todo.content);
-                    getTodos();
-                  }}
-                >
-                  変更
-                </button> */}
               </li>
             ))}
           </ul>
