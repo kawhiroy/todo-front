@@ -5,7 +5,6 @@ import { Todo, UpdateTodo } from "./schema";
 
 export default function Home() {
   // setTextでtextを更新。初期値は空で定義
-  const [data, setData] = useState<Todo[]>([]);
   const [text, setText] = useState<string>("");
   const [date, setDate] = useState<string>("");
   const [todos, setTodos] = useState<Todo[]>([]);
@@ -29,12 +28,13 @@ export default function Home() {
   // Todoを取得
   const getTodos = () => {
     axios.get("http://127.0.0.1:8000/todos").then((res) => {
-      setData(res.data);
+      setTodos(res.data);
+      console.log(todos);
     });
   };
 
   // Todoを追加
-  const addTodo = () => {
+  const addTodo = async () => {
     const newTodo: UpdateTodo = {
       content: text,
       deadline: date,
@@ -51,58 +51,49 @@ export default function Home() {
     setDate("");
   };
 
-  //  Todoの編集
-  const editTodo = (id: number, content: string) => {
-    //  todosオブジェクトの中身を書き換えないようにmap()を使ってディープコピー
-    const copyTodo = todos.map((todo) => ({ ...todo }));
-    console.log(copyTodo);
+  // //  Todoの編集
+  // const editTodo = (id: number, content: string) => {
+  //   //  todosオブジェクトの中身を書き換えないようにmap()を使ってディープコピー
+  //   const copyTodo = todos.map((todo) => ({ ...todo }));
+  //   console.log(copyTodo);
 
-    const newTodos = copyTodo.map((todo) => {
-      if (todo.id === id) {
-        todo.content = content;
-      }
-      return todo;
-    });
+  //   // todosを更新
+  //   const newTodos = copyTodo.map((todo) => {
+  //     if (todo.id === id) {
+  //       todo.content = content;
+  //     }
+  //     return todo;
+  //   });
 
-    setTodos(newTodos);
-  };
-
-  //  期日の編集
-  const editDate = (id: number, deadline: string) => {
-    //
-    const copyDate = todos.map((todo) => ({ ...todo }));
-    console.log(copyDate);
-
-    const newDate = copyDate.map((todo) => {
-      if (todo.id === id) {
-        todo.deadline = deadline;
-      }
-      return todo;
-    });
-
-    setTodos(newDate);
-  };
-
-  //  todoを削除
-  // const deleteTodo = (id: number) => {
-  //   //idが正しくないのは残す。正しいと消す。
-  //   const newTodos = todos.filter((todo) => todo.id !== id);
   //   setTodos(newTodos);
+  // };
+
+  // //  期日の編集
+  // const editDate = (id: number, deadline: string) => {
+  //   //
+  //   const copyDate = todos.map((todo) => ({ ...todo }));
+  //   console.log(copyDate);
+
+  //   const newDate = copyDate.map((todo) => {
+  //     if (todo.id === id) {
+  //       todo.deadline = deadline;
+  //     }
+  //     return todo;
+  //   });
+
+  //   setTodos(newDate);
   // };
 
   //  Todoの削除
   const deleteTodo = (id: number) => {
     axios
-      .delete("http://127.0.0.1:8000/todos/{id}", { params: { id: id } })
+      .delete("http://127.0.0.1:8000/todos/" + id, { params: { id: id } })
       .then((res) => {
         console.log(res);
       })
       .catch((error) => {
         console.log(error);
       });
-    //idが正しくないのは残す。正しいと消す。
-    const newTodos = todos.filter((todo) => todo.id !== id);
-    setTodos(newTodos);
   };
 
   //  今日の日付を取得
@@ -143,6 +134,7 @@ export default function Home() {
                 alert("期日を選択してください");
               } else {
                 addTodo();
+                getTodos();
               }
             }}
           >
@@ -150,58 +142,40 @@ export default function Home() {
           </button>
         </div>
 
-        {/* Todo一覧 */}
-        {/* <div>
+        <div>
           <ul>
             {todos.map((todo) => (
               <li key={todo.id}>
                 <input
                   type="text"
                   value={todo.content}
-                  onChange={(e) => editTodo(todo.id, e.target.value)}
+                  // onChange={(e) => editTodo(todo.id, e.target.value)}
                 />
                 <input
                   type="date"
                   min={nowDateString}
                   value={todo.deadline}
-                  onChange={(e) => editDate(todo.id, e.target.value)}
+                  // onChange={(e) => editDate(todo.id, e.target.value)}
                 />
 
                 <button
                   onClick={() => {
                     deleteTodo(todo.id);
+                    getTodos();
                   }}
                 >
-                  削除
+                  ✖
                 </button>
-              </li>
-            ))}
-          </ul>
-        </div> */}
 
-        <div>
-          <ul>
-            {data.map((todo) => (
-              <li key={todo.id}>
-                <input
-                  type="text"
-                  value={todo.content}
-                  onChange={(e) => editTodo(todo.id, e.target.value)}
-                />
-                <input
-                  type="date"
-                  min={nowDateString}
-                  value={todo.deadline}
-                  onChange={(e) => editDate(todo.id, e.target.value)}
-                />
-
-                <button
+                {/* Todoの編集 */}
+                {/* <button
                   onClick={() => {
-                    deleteTodo(todo.id);
+                    editTodo(todo.id, todo.content);
+                    getTodos();
                   }}
                 >
-                  削除
-                </button>
+                  変更
+                </button> */}
               </li>
             ))}
           </ul>
