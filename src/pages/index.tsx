@@ -2,6 +2,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { Todo, UpdateTodo } from "./schema";
+import { nowDateTypeString } from "./validate";
 
 export default function Home() {
   // setTextでtextを更新。初期値は空で定義
@@ -9,14 +10,12 @@ export default function Home() {
   const [date, setDate] = useState<string>("");
   const [todos, setTodos] = useState<Todo[]>([]);
 
-  // const urls = {
-  //   todos: "http://127.0.0.1:8000/todos",
-  // };
+  // const url = "http://127.0.0.1:8000/todos";
 
   //初期画面でTodo一覧を取得
   useEffect(() => {
     getTodos();
-  }, [setTodos]);
+  }, []);
 
   //  changeText関数
   const changeText = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -43,6 +42,7 @@ export default function Home() {
     const newTodo: UpdateTodo = {
       content: text,
       deadline: date,
+      checked: false,
     };
     axios
       .post("http://127.0.0.1:8000/todos", newTodo)
@@ -56,8 +56,58 @@ export default function Home() {
     setDate("");
   };
 
+  // Todoの編集
+  const handleContent = (id: number, content: string) => {
+    const newTodos = todos.map((todo) => {
+      if (todo.id === id) {
+        todo.content = content;
+      }
+      return todo;
+    });
+    setTodos(newTodos);
+  };
+
+  //  deadlineの編集
+  const handleDeadline = (id: number, deadline: string) => {
+    const newTodos = todos.map((todo) => {
+      if (todo.id === id) {
+        todo.deadline = deadline;
+      }
+      return todo;
+    });
+    setTodos(newTodos);
+  };
+
+  // checkedの変更
+  const handleChecked = (id: number, checked: boolean) => {
+    const newTodos = todos.map((todo) => {
+      if (todo.id === id) {
+        todo.checked = !checked;
+      }
+      return todo;
+    });
+    setTodos(newTodos);
+  };
+
+  //  Todoの更新
+  const updateTodos = async (todo: Todo) => {
+    const newTodo: UpdateTodo = {
+      content: todo.content, //対象のtodoをとってくる
+      deadline: todo.deadline,
+      checked: todo.checked,
+    };
+    axios
+      .put("http://127.0.0.1:8000/todos/" + todo.id, newTodo)
+      .then((res) => {
+        console.log(res);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
   //  Todoの削除
-  const deleteTodo = (id: number) => {
+  const deleteTodo = async (id: number) => {
     axios
       .delete("http://127.0.0.1:8000/todos/" + id, { params: { id: id } })
       .then((res) => {
@@ -67,15 +117,6 @@ export default function Home() {
         console.log(error);
       });
   };
-
-  //  今日の日付を取得
-  const nowDate = new Date();
-  const nowDateTypeString =
-    nowDate.getFullYear() +
-    "-" +
-    ("0" + (nowDate.getMonth() + 1)).slice(-2) +
-    "-" +
-    ("0" + nowDate.getDate()).slice(-2);
 
   return (
     <div className="index">
@@ -118,12 +159,30 @@ export default function Home() {
           <ul>
             {todos.map((todo) => (
               <li key={todo.id}>
-                <input type="text" value={todo.content} readOnly />
+                <input
+                  type="text"
+                  value={todo.content}
+                  disabled={todo.checked}
+                  onChange={(e) => {
+                    handleContent(todo.id, e.target.value);
+                  }}
+                />
                 <input
                   type="date"
                   min={nowDateTypeString}
                   value={todo.deadline}
-                  readOnly
+                  disabled={todo.checked}
+                  onChange={(e) => {
+                    handleDeadline(todo.id, e.target.value);
+                  }}
+                />
+
+                <input
+                  type="checkbox"
+                  onClick={() => {
+                    handleChecked(todo.id, todo.checked);
+                  }}
+                  defaultChecked={todo.checked ? true : false}
                 />
 
                 <button
@@ -133,6 +192,14 @@ export default function Home() {
                   }}
                 >
                   ✖
+                </button>
+                <button
+                  onClick={() => {
+                    updateTodos(todo);
+                    getTodos();
+                  }}
+                >
+                  保存
                 </button>
               </li>
             ))}
