@@ -6,6 +6,12 @@ export type Todo = {
   checked: boolean;
 };
 
+export type CreateTodo = {
+  content: string;
+  deadline: string;
+  checked: boolean;
+};
+
 export type UpdateTodo = {
   content: string;
   deadline: string;

@@ -1,8 +1,9 @@
 "use client";
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { Todo, UpdateTodo } from "./schema";
+import { Todo, UpdateTodo, CreateTodo } from "./schema";
 import { nowDateTypeString } from "./validate";
+import { PlusCircleIcon, TrashIcon } from "@heroicons/react/24/solid";
 
 export default function Home() {
   // setTextでtextを更新。初期値は空で定義
@@ -30,30 +31,41 @@ export default function Home() {
   };
 
   // Todoを取得
-  const getTodos = () => {
-    axios.get("http://127.0.0.1:8000/todos").then((res) => {
+  const getTodos = async () => {
+    await axios.get("http://127.0.0.1:8000/todos").then((res) => {
       setTodos(res.data);
       console.log(todos);
     });
   };
 
+  // Todo[]を並べ替え
+  const sortedTodo = todos.sort((a, b) => a.id - b.id);
+
   // Todoを追加
-  const addTodo = async () => {
-    const newTodo: UpdateTodo = {
-      content: text,
-      deadline: date,
-      checked: false,
-    };
-    axios
-      .post("http://127.0.0.1:8000/todos", newTodo)
-      .then((res) => {
-        console.log(res);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-    setText("");
-    setDate("");
+  const handleAdd = async () => {
+    if (text == "") {
+      alert("Todoを入力してください");
+      return;
+    } else if (date == "") {
+      alert("期日を選択してください");
+      return;
+    } else {
+      const newTodo: CreateTodo = {
+        content: text,
+        deadline: date,
+        checked: false,
+      };
+      axios
+        .post("http://127.0.0.1:8000/todos", newTodo)
+        .then((res) => {
+          console.log(res);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+      setText("");
+      setDate("");
+    }
   };
 
   // Todoの編集
@@ -67,7 +79,7 @@ export default function Home() {
     setTodos(newTodos);
   };
 
-  //  deadlineの編集
+  // deadlineの編集
   const handleDeadline = (id: number, deadline: string) => {
     const newTodos = todos.map((todo) => {
       if (todo.id === id) {
@@ -90,13 +102,13 @@ export default function Home() {
   };
 
   //  Todoの更新
-  const updateTodos = async (todo: Todo) => {
+  const handleUpdate = async (todo: Todo) => {
     const newTodo: UpdateTodo = {
       content: todo.content, //対象のtodoをとってくる
       deadline: todo.deadline,
       checked: todo.checked,
     };
-    axios
+    await axios
       .put("http://127.0.0.1:8000/todos/" + todo.id, newTodo)
       .then((res) => {
         console.log(res);
@@ -107,7 +119,7 @@ export default function Home() {
   };
 
   //  Todoの削除
-  const deleteTodo = async (id: number) => {
+  const handleDelete = async (id: number) => {
     axios
       .delete("http://127.0.0.1:8000/todos/" + id, { params: { id: id } })
       .then((res) => {
@@ -121,108 +133,95 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-400 to-indigo-700">
       <div className="max-w-md mx-auto flex flex-col items-center justify-center pt-20">
-        <div className="index">
-          <main>
-            <h1 className="text-4xl font-bold text-white mb-8">Todo</h1>
-            {/* Todo追加 */}
-            <form className="w-full flex items-center bg-white rounded-lg mb-6 shadow-lg overflow-hidden">
-              <input
-                className="w-full py-2 px-4 text-gray-700 focus:outline-none"
-                type="text"
-                placeholder="Input your todo item..."
-                required
-                value={text}
-                onChange={changeText}
-              />
-              <input
-                className="inputText"
-                type="date"
-                min={nowDateTypeString}
-                value={date}
-                onChange={changeDate}
-              />
-              <button
-                className="px-4 py-2 bg-blue-500 text-white"
-                type="submit"
-                onClick={() => {
-                  if (text == "") {
-                    alert("Todoを入力してください");
-                  } else if (date == "") {
-                    alert("期日を選択してください");
-                  } else {
-                    addTodo();
-                    getTodos();
-                  }
-                }}
-              >
-                追加
-              </button>
-            </form>
-            <div>
-              <ul className="w-full max-w-md bg-white rounded-lg shadow-lg overflow-hidden">
-                {todos.map((todo) => (
-                  <li
-                    className="border-b py-4 px-6 text-xl font-medium flex items-center justify-between"
-                    key={todo.id}
+        <main>
+          <h1 className="text-4xl font-bold text-white mb-8">Todo</h1>
+          <form className="w-full flex items-center bg-white rounded-lg mb-6 shadow-lg overflow-hidden">
+            <input
+              className="w-full py-2 px-4 text-gray-700"
+              type="text"
+              placeholder="Todoを入力"
+              required
+              value={text}
+              onChange={changeText}
+            />
+            <input
+              className="w-full py-2 px-12"
+              type="date"
+              min={nowDateTypeString}
+              value={date}
+              onChange={changeDate}
+            />
+            <button
+              className="px-4 py-2 bg-blue-500 text-white"
+              type="submit"
+              onClick={() => {
+                handleAdd();
+                getTodos();
+              }}
+            >
+              <PlusCircleIcon className="h-8 w-8" />
+            </button>
+          </form>
+          <div>
+            <ul className="w-full max-w-md bg-white rounded-lg shadow-lg overflow-hidden">
+              {sortedTodo.map((todo) => (
+                <li
+                  className="border-b py-4 px-6 text-xl font-medium flex items-center justify-between"
+                  key={todo.id}
+                >
+                  <input
+                    className="w-full py-2 px-4 text-gray-700"
+                    type="text"
+                    value={todo.content}
+                    disabled={todo.checked}
+                    onChange={(e) => {
+                      handleContent(todo.id, e.target.value);
+                    }}
+                    onBlur={() => handleUpdate(todo)}
+                  />
+                  <input
+                    className="w-full py-2 px-4 text-gray-700"
+                    type="date"
+                    min={nowDateTypeString}
+                    value={todo.deadline}
+                    disabled={todo.checked}
+                    onChange={(e) => {
+                      handleDeadline(todo.id, e.target.value);
+                    }}
+                    onBlur={() => handleUpdate(todo)}
+                  />
+                  <input
+                    type="checkbox"
+                    className="cursor-pointer h-10 w-10"
+                    onClick={() => {
+                      handleChecked(todo.id, todo.checked);
+                    }}
+                    onChange={() => handleUpdate(todo)}
+                    defaultChecked={todo.checked ? true : false}
+                  />
+                  <button
+                    className=""
+                    onClick={() => {
+                      handleDelete(todo.id);
+                      getTodos();
+                    }}
                   >
-                    <input
-                      type="text"
-                      value={todo.content}
-                      disabled={todo.checked}
-                      onChange={(e) => {
-                        handleContent(todo.id, e.target.value);
-                      }}
-                    />
-                    <input
-                      type="date"
-                      min={nowDateTypeString}
-                      value={todo.deadline}
-                      disabled={todo.checked}
-                      onChange={(e) => {
-                        handleDeadline(todo.id, e.target.value);
-                      }}
-                    />
-                    <input
-                      type="checkbox"
-                      className="cursor-pointer"
-                      onClick={() => {
-                        handleChecked(todo.id, todo.checked);
-                      }}
-                      defaultChecked={todo.checked ? true : false}
-                    />
-                    <button
-                      className=""
-                      onClick={() => {
-                        deleteTodo(todo.id);
-                        getTodos();
-                      }}
-                    >
-                      ✖
-                    </button>
-                    <button
-                      className="text-black"
-                      onClick={() => {
-                        updateTodos(todo);
-                        getTodos();
-                      }}
-                    >
-                      保存
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-blue-500 text-white"
-                onClick={getTodos}
-              >
-                GET Todo
-              </button>
-            </div>
-          </main>
-        </div>
+                    <TrashIcon className="h-6 w-6" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-blue-500 text-white"
+              onClick={getTodos}
+            >
+              GET Todo
+            </button>
+          </div>
+        </main>
       </div>
     </div>
   );
