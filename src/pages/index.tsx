@@ -119,97 +119,111 @@ export default function Home() {
   };
 
   return (
-    <div className="index">
-      <main>
-        <h1>Todo</h1>
-
-        {/* Todo追加 */}
-        <div>
-          <input
-            className="inputText"
-            type="text"
-            value={text}
-            onChange={changeText}
-          />
-          <input
-            className="inputText"
-            type="date"
-            min={nowDateTypeString}
-            value={date}
-            onChange={changeDate}
-          />
-          <button
-            className="submitButton"
-            onClick={() => {
-              if (text == "") {
-                alert("Todoを入力してください");
-              } else if (date == "") {
-                alert("期日を選択してください");
-              } else {
-                addTodo();
-                getTodos();
-              }
-            }}
-          >
-            追加
-          </button>
-        </div>
-
-        <div>
-          <ul>
-            {todos.map((todo) => (
-              <li key={todo.id}>
-                <input
-                  type="text"
-                  value={todo.content}
-                  disabled={todo.checked}
-                  onChange={(e) => {
-                    handleContent(todo.id, e.target.value);
-                  }}
-                />
-                <input
-                  type="date"
-                  min={nowDateTypeString}
-                  value={todo.deadline}
-                  disabled={todo.checked}
-                  onChange={(e) => {
-                    handleDeadline(todo.id, e.target.value);
-                  }}
-                />
-
-                <input
-                  type="checkbox"
-                  onClick={() => {
-                    handleChecked(todo.id, todo.checked);
-                  }}
-                  defaultChecked={todo.checked ? true : false}
-                />
-
-                <button
-                  onClick={() => {
-                    deleteTodo(todo.id);
+    <div className="min-h-screen bg-gradient-to-b from-blue-400 to-indigo-700">
+      <div className="max-w-md mx-auto flex flex-col items-center justify-center pt-20">
+        <div className="index">
+          <main>
+            <h1 className="text-4xl font-bold text-white mb-8">Todo</h1>
+            {/* Todo追加 */}
+            <form className="w-full flex items-center bg-white rounded-lg mb-6 shadow-lg overflow-hidden">
+              <input
+                className="w-full py-2 px-4 text-gray-700 focus:outline-none"
+                type="text"
+                placeholder="Input your todo item..."
+                required
+                value={text}
+                onChange={changeText}
+              />
+              <input
+                className="inputText"
+                type="date"
+                min={nowDateTypeString}
+                value={date}
+                onChange={changeDate}
+              />
+              <button
+                className="px-4 py-2 bg-blue-500 text-white"
+                type="submit"
+                onClick={() => {
+                  if (text == "") {
+                    alert("Todoを入力してください");
+                  } else if (date == "") {
+                    alert("期日を選択してください");
+                  } else {
+                    addTodo();
                     getTodos();
-                  }}
-                >
-                  ✖
-                </button>
-                <button
-                  onClick={() => {
-                    updateTodos(todo);
-                    getTodos();
-                  }}
-                >
-                  保存
-                </button>
-              </li>
-            ))}
-          </ul>
+                  }
+                }}
+              >
+                追加
+              </button>
+            </form>
+            <div>
+              <ul className="w-full max-w-md bg-white rounded-lg shadow-lg overflow-hidden">
+                {todos.map((todo) => (
+                  <li
+                    className="border-b py-4 px-6 text-xl font-medium flex items-center justify-between"
+                    key={todo.id}
+                  >
+                    <input
+                      type="text"
+                      value={todo.content}
+                      disabled={todo.checked}
+                      onChange={(e) => {
+                        handleContent(todo.id, e.target.value);
+                      }}
+                    />
+                    <input
+                      type="date"
+                      min={nowDateTypeString}
+                      value={todo.deadline}
+                      disabled={todo.checked}
+                      onChange={(e) => {
+                        handleDeadline(todo.id, e.target.value);
+                      }}
+                    />
+                    <input
+                      type="checkbox"
+                      className="cursor-pointer"
+                      onClick={() => {
+                        handleChecked(todo.id, todo.checked);
+                      }}
+                      defaultChecked={todo.checked ? true : false}
+                    />
+                    <button
+                      className=""
+                      onClick={() => {
+                        deleteTodo(todo.id);
+                        getTodos();
+                      }}
+                    >
+                      ✖
+                    </button>
+                    <button
+                      className="text-black"
+                      onClick={() => {
+                        updateTodos(todo);
+                        getTodos();
+                      }}
+                    >
+                      保存
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <button
+                type="submit"
+                className="px-4 py-2 bg-blue-500 text-white"
+                onClick={getTodos}
+              >
+                GET Todo
+              </button>
+            </div>
+          </main>
         </div>
-
-        <div>
-          <button onClick={getTodos}>GET Todo</button>
-        </div>
-      </main>
+      </div>
     </div>
   );
 }
