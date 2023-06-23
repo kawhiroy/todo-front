@@ -1,6 +1,6 @@
 "use client";
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { MouseEvent, useEffect, useState } from "react";
 import { Todo, UpdateTodo, CreateTodo } from "./schema";
 import { nowDateTypeString } from "./validate";
 import { PlusCircleIcon, TrashIcon } from "@heroicons/react/24/solid";
@@ -11,9 +11,7 @@ export default function Home() {
   const [date, setDate] = useState<string>("");
   const [todos, setTodos] = useState<Todo[]>([]);
 
-  // const url = "http://127.0.0.1:8000/todos";
-
-  //初期画面でTodo一覧を取得
+  // 初期画面でTodo一覧を取得
   useEffect(() => {
     getTodos();
   }, []);
@@ -32,40 +30,49 @@ export default function Home() {
 
   // Todoを取得
   const getTodos = async () => {
-    await axios.get("http://127.0.0.1:8000/todos").then((res) => {
-      setTodos(res.data);
-      console.log(todos);
-    });
+    await axios
+      .get(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/todos`)
+      .then((res) => {
+        setTodos(res.data);
+        console.log(todos);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   };
 
   // Todo[]を並べ替え
   const sortedTodo = todos.sort((a, b) => a.id - b.id);
 
   // Todoを追加
-  const handleAdd = async () => {
-    if (text == "") {
+  const handleAdd = async (
+    e: MouseEvent<HTMLButtonElement, globalThis.MouseEvent>
+  ) => {
+    e.preventDefault();
+    if (!text.trim()) {
       alert("Todoを入力してください");
       return;
-    } else if (date == "") {
+    }
+    if (date == "") {
       alert("期日を選択してください");
       return;
-    } else {
-      const newTodo: CreateTodo = {
-        content: text,
-        deadline: date,
-        checked: false,
-      };
-      axios
-        .post("http://127.0.0.1:8000/todos", newTodo)
-        .then((res) => {
-          console.log(res);
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-      setText("");
-      setDate("");
     }
+    const newTodo: CreateTodo = {
+      content: text,
+      deadline: date,
+      checked: false,
+    };
+    await axios
+      .post(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/todos`, newTodo)
+      .then((res) => {
+        console.log(res);
+        setText("");
+        setDate("");
+        getTodos();
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   };
 
   // Todoの編集
@@ -109,7 +116,7 @@ export default function Home() {
       checked: todo.checked,
     };
     await axios
-      .put("http://127.0.0.1:8000/todos/" + todo.id, newTodo)
+      .put(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/todos/${todo.id}`, newTodo)
       .then((res) => {
         console.log(res);
       })
@@ -121,7 +128,9 @@ export default function Home() {
   //  Todoの削除
   const handleDelete = async (id: number) => {
     axios
-      .delete("http://127.0.0.1:8000/todos/" + id, { params: { id: id } })
+      .delete(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/todos/${id}`, {
+        params: { id: id },
+      })
       .then((res) => {
         console.log(res);
       })
@@ -135,12 +144,13 @@ export default function Home() {
       <div className="max-w-md mx-auto flex flex-col items-center justify-center pt-20">
         <main>
           <h1 className="text-4xl font-bold text-white mb-8">Todo</h1>
+
           <form className="w-full flex items-center bg-white rounded-lg mb-6 shadow-lg overflow-hidden">
             <input
               className="w-full py-2 px-4 text-gray-700"
               type="text"
               placeholder="Todoを入力"
-              required
+              // required
               value={text}
               onChange={changeText}
             />
@@ -154,14 +164,12 @@ export default function Home() {
             <button
               className="px-4 py-2 bg-blue-500 text-white"
               type="submit"
-              onClick={() => {
-                handleAdd();
-                getTodos();
-              }}
+              onClick={handleAdd}
             >
               <PlusCircleIcon className="h-8 w-8" />
             </button>
           </form>
+
           <div>
             <ul className="w-full max-w-md bg-white rounded-lg shadow-lg overflow-hidden">
               {sortedTodo.map((todo) => (

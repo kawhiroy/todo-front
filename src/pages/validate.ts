@@ -1,5 +1,5 @@
 //  今日の日付を取得
-export const nowDate = new Date();
+const nowDate = new Date();
 export const nowDateTypeString =
   nowDate.getFullYear() +
   "-" +
