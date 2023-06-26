@@ -1,9 +1,11 @@
 "use client";
 import axios from "axios";
+import InputForm from "@/components/InputForm";
+// import TodoItems from "@/components/TodoItems";
 import { MouseEvent, useEffect, useState } from "react";
 import { Todo, UpdateTodo, CreateTodo } from "./schema";
 import { nowDateTypeString } from "./validate";
-import { PlusCircleIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { TrashIcon } from "@heroicons/react/24/solid";
 
 export default function Home() {
   // setTextでtextを更新。初期値は空で定義
@@ -27,22 +29,6 @@ export default function Home() {
     e.preventDefault();
     setDate(e.target.value); //  e.target.valueで入力されたものを取り出しdateを変更
   };
-
-  // Todoを取得
-  const getTodos = async () => {
-    await axios
-      .get(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/todos`)
-      .then((res) => {
-        setTodos(res.data);
-        console.log(todos);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
-
-  // Todo[]を並べ替え
-  const sortedTodo = todos.sort((a, b) => a.id - b.id);
 
   // Todoを追加
   const handleAdd = async (
@@ -74,6 +60,22 @@ export default function Home() {
         console.log(error);
       });
   };
+
+  // Todoを取得
+  const getTodos = async () => {
+    await axios
+      .get(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/todos`)
+      .then((res) => {
+        setTodos(res.data);
+        console.log(todos);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+  // Todo[]を並べ替え
+  const sortedTodo = todos.sort((a, b) => a.id - b.id);
 
   // Todoの編集
   const handleContent = (id: number, content: string) => {
@@ -133,6 +135,7 @@ export default function Home() {
       })
       .then((res) => {
         console.log(res);
+        getTodos();
       })
       .catch((error) => {
         console.log(error);
@@ -145,30 +148,13 @@ export default function Home() {
         <main>
           <h1 className="text-4xl font-bold text-white mb-8">Todo</h1>
 
-          <form className="w-full flex items-center bg-white rounded-lg mb-6 shadow-lg overflow-hidden">
-            <input
-              className="w-full py-2 px-4 text-gray-700"
-              type="text"
-              placeholder="Todoを入力"
-              // required
-              value={text}
-              onChange={changeText}
-            />
-            <input
-              className="w-full py-2 px-12"
-              type="date"
-              min={nowDateTypeString}
-              value={date}
-              onChange={changeDate}
-            />
-            <button
-              className="px-4 py-2 bg-blue-500 text-white"
-              type="submit"
-              onClick={handleAdd}
-            >
-              <PlusCircleIcon className="h-8 w-8" />
-            </button>
-          </form>
+          <InputForm
+            text={text}
+            date={date}
+            changeText={changeText}
+            changeDate={changeDate}
+            handleAdd={handleAdd}
+          />
 
           <div>
             <ul className="w-full max-w-md bg-white rounded-lg shadow-lg overflow-hidden">
@@ -211,7 +197,6 @@ export default function Home() {
                     className=""
                     onClick={() => {
                       handleDelete(todo.id);
-                      getTodos();
                     }}
                   >
                     <TrashIcon className="h-6 w-6" />
@@ -220,7 +205,9 @@ export default function Home() {
               ))}
             </ul>
           </div>
-          <div>
+          {/* <TodoItems /> */}
+
+          {/* <div>
             <button
               type="submit"
               className="px-4 py-2 bg-blue-500 text-white"
@@ -228,7 +215,7 @@ export default function Home() {
             >
               GET Todo
             </button>
-          </div>
+          </div> */}
         </main>
       </div>
     </div>
