@@ -1,11 +1,9 @@
 "use client";
 import axios from "axios";
 import InputForm from "@/components/InputForm";
-// import TodoItems from "@/components/TodoItems";
+import TodoItems from "@/components/TodoItems";
 import { MouseEvent, useEffect, useState } from "react";
 import { Todo, UpdateTodo, CreateTodo } from "./schema";
-import { nowDateTypeString } from "./validate";
-import { TrashIcon } from "@heroicons/react/24/solid";
 
 export default function Home() {
   // setTextでtextを更新。初期値は空で定義
@@ -39,12 +37,16 @@ export default function Home() {
       alert("Todoを入力してください");
       return;
     }
+    if (text.length > 20) {
+      alert("Todo名は20文字以内にしてください");
+      return;
+    }
     if (date == "") {
       alert("期日を選択してください");
       return;
     }
     const newTodo: CreateTodo = {
-      content: text,
+      content: text.trim(),
       deadline: date,
       checked: false,
     };
@@ -73,9 +75,6 @@ export default function Home() {
         console.log(error);
       });
   };
-
-  // Todo[]を並べ替え
-  const sortedTodo = todos.sort((a, b) => a.id - b.id);
 
   // Todoの編集
   const handleContent = (id: number, content: string) => {
@@ -112,8 +111,20 @@ export default function Home() {
 
   //  Todoの更新
   const handleUpdate = async (todo: Todo) => {
+    // バリデーションチェック
+    todos.map((task) => {
+      if (task.content.length > 20) {
+        alert("Todo名は20文字以内にしてください");
+        return;
+      }
+      if (!task.content.trim()) {
+        alert("未入力のTodoがあります");
+        return;
+      }
+    });
+
     const newTodo: UpdateTodo = {
-      content: todo.content, //対象のtodoをとってくる
+      content: todo.content.trim(),
       deadline: todo.deadline,
       checked: todo.checked,
     };
@@ -156,66 +167,14 @@ export default function Home() {
             handleAdd={handleAdd}
           />
 
-          <div>
-            <ul className="w-full max-w-md bg-white rounded-lg shadow-lg overflow-hidden">
-              {sortedTodo.map((todo) => (
-                <li
-                  className="border-b py-4 px-6 text-xl font-medium flex items-center justify-between"
-                  key={todo.id}
-                >
-                  <input
-                    className="w-full py-2 px-4 text-gray-700"
-                    type="text"
-                    value={todo.content}
-                    disabled={todo.checked}
-                    onChange={(e) => {
-                      handleContent(todo.id, e.target.value);
-                    }}
-                    onBlur={() => handleUpdate(todo)}
-                  />
-                  <input
-                    className="w-full py-2 px-4 text-gray-700"
-                    type="date"
-                    min={nowDateTypeString}
-                    value={todo.deadline}
-                    disabled={todo.checked}
-                    onChange={(e) => {
-                      handleDeadline(todo.id, e.target.value);
-                    }}
-                    onBlur={() => handleUpdate(todo)}
-                  />
-                  <input
-                    type="checkbox"
-                    className="cursor-pointer h-10 w-10"
-                    onClick={() => {
-                      handleChecked(todo.id, todo.checked);
-                    }}
-                    onChange={() => handleUpdate(todo)}
-                    defaultChecked={todo.checked ? true : false}
-                  />
-                  <button
-                    className=""
-                    onClick={() => {
-                      handleDelete(todo.id);
-                    }}
-                  >
-                    <TrashIcon className="h-6 w-6" />
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-          {/* <TodoItems /> */}
-
-          {/* <div>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-blue-500 text-white"
-              onClick={getTodos}
-            >
-              GET Todo
-            </button>
-          </div> */}
+          <TodoItems
+            todos={todos}
+            handleContent={handleContent}
+            handleUpdate={handleUpdate}
+            handleDeadline={handleDeadline}
+            handleChecked={handleChecked}
+            handleDelete={handleDelete}
+          />
         </main>
       </div>
     </div>

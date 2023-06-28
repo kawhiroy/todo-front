@@ -22,7 +22,6 @@ const InputForm = ({
           className="w-full py-2 px-4 text-gray-700"
           type="text"
           placeholder="Todoを入力"
-          // required
           value={text}
           onChange={changeText}
         />
