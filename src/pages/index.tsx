@@ -19,6 +19,10 @@ export default function Home() {
   //  changeText関数
   const changeText = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
+    if (e.target.value.length > 20) {
+      alert("Todo名は20文字以内にしてください");
+      return;
+    }
     setText(e.target.value); //  e.target.valueで入力されたものを取り出しtextを変更
   };
 
@@ -35,10 +39,6 @@ export default function Home() {
     e.preventDefault();
     if (!text.trim()) {
       alert("Todoを入力してください");
-      return;
-    }
-    if (text.length > 20) {
-      alert("Todo名は20文字以内にしてください");
       return;
     }
     if (date == "") {
@@ -78,6 +78,10 @@ export default function Home() {
 
   // Todoの編集
   const handleContent = (id: number, content: string) => {
+    if (content.length > 20) {
+      alert("Todo名は20文字以内にしてください");
+      return;
+    }
     const newTodos = todos.map((todo) => {
       if (todo.id === id) {
         todo.content = content;
@@ -111,18 +115,6 @@ export default function Home() {
 
   //  Todoの更新
   const handleUpdate = async (todo: Todo) => {
-    // バリデーションチェック
-    todos.map((task) => {
-      if (task.content.length > 20) {
-        alert("Todo名は20文字以内にしてください");
-        return;
-      }
-      if (!task.content.trim()) {
-        alert("未入力のTodoがあります");
-        return;
-      }
-    });
-
     const newTodo: UpdateTodo = {
       content: todo.content.trim(),
       deadline: todo.deadline,
@@ -157,7 +149,9 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-b from-blue-400 to-indigo-700">
       <div className="max-w-md mx-auto flex flex-col items-center justify-center pt-20">
         <main>
-          <h1 className="text-4xl font-bold text-white mb-8">Todo</h1>
+          <h1 className="text-4xl font-bold text-white mb-8 text-center">
+            Todo
+          </h1>
 
           <InputForm
             text={text}
@@ -175,6 +169,11 @@ export default function Home() {
             handleChecked={handleChecked}
             handleDelete={handleDelete}
           />
+          <div>
+            <p className="font-bold text-white text-center w-auto">
+              Tailwind CSS
+            </p>
+          </div>
         </main>
       </div>
     </div>
