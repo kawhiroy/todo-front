@@ -1,6 +1,6 @@
 import React from "react";
 import { nowDateTypeString } from "@/pages/validate";
-import { TrashIcon, ExclamationCircleIcon } from "@heroicons/react/20/solid";
+import { TrashIcon } from "@heroicons/react/20/solid";
 import { Todo } from "@/pages/schema";
 
 const TodoItems = (props: any) => {

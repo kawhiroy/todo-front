@@ -26,7 +26,7 @@ const InputForm = ({
           onChange={changeText}
         />
         <input
-          className="outline-none w-full py-2 px-8"
+          className="outline-none w-full py-2 px-8 text-gray-700"
           type="date"
           min={nowDateTypeString}
           value={date}

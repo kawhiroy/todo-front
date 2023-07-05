@@ -169,11 +169,6 @@ export default function Home() {
             handleChecked={handleChecked}
             handleDelete={handleDelete}
           />
-          <div>
-            <p className="font-bold text-white text-center w-auto">
-              Tailwind CSS
-            </p>
-          </div>
         </main>
       </div>
     </div>
