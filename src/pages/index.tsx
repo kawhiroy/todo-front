@@ -16,7 +16,6 @@ export default function Home() {
     getTodos();
   }, []);
 
-  //  changeText関数
   const changeText = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
     if (e.target.value.length > 20) {
@@ -26,7 +25,6 @@ export default function Home() {
     setText(e.target.value); //  e.target.valueで入力されたものを取り出しtextを変更
   };
 
-  //  日付を取得するchangeDate関数
   const changeDate = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
     setDate(e.target.value); //  e.target.valueで入力されたものを取り出しdateを変更
