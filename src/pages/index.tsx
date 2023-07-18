@@ -1,8 +1,10 @@
 "use client";
 import axios from "axios";
+import Cookies from "js-cookie";
 import InputForm from "@/components/InputForm";
 import TodoItems from "@/components/TodoItems";
 import { MouseEvent, useEffect, useState } from "react";
+import { useRouter } from "next/router";
 import { Todo, UpdateTodo, CreateTodo } from "./schema";
 
 export default function Home() {
@@ -15,6 +17,8 @@ export default function Home() {
   useEffect(() => {
     getTodos();
   }, []);
+
+  const router = useRouter();
 
   const changeText = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
@@ -49,7 +53,11 @@ export default function Home() {
       checked: false,
     };
     await axios
-      .post(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/todos`, newTodo)
+      .post(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/todos`, newTodo, {
+        headers: {
+          Authorization: `Bearer ${Cookies.get("access_token")}`,
+        },
+      })
       .then((res) => {
         console.log(res);
         setText("");
@@ -64,7 +72,11 @@ export default function Home() {
   // Todoを取得
   const getTodos = async () => {
     await axios
-      .get(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/todos`)
+      .get(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/todos`, {
+        headers: {
+          Authorization: `Bearer ${Cookies.get("access_token")}`,
+        },
+      })
       .then((res) => {
         setTodos(res.data);
         console.log(todos);
@@ -119,7 +131,15 @@ export default function Home() {
       checked: todo.checked,
     };
     await axios
-      .put(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/todos/${todo.id}`, newTodo)
+      .put(
+        `${process.env.NEXT_PUBLIC_API_ENDPOINT}/todos/${todo.id}`,
+        newTodo,
+        {
+          headers: {
+            Authorization: `Bearer ${Cookies.get("access_token")}`,
+          },
+        }
+      )
       .then((res) => {
         console.log(res);
       })
@@ -132,7 +152,12 @@ export default function Home() {
   const handleDelete = async (id: number) => {
     axios
       .delete(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/todos/${id}`, {
-        params: { id: id },
+        params: {
+          id: id,
+        },
+        headers: {
+          Authorization: `Bearer ${Cookies.get("access_token")}`,
+        },
       })
       .then((res) => {
         console.log(res);
@@ -141,6 +166,26 @@ export default function Home() {
       .catch((error) => {
         console.log(error);
       });
+  };
+
+  const getUserMe = async () => {
+    await axios
+      .get(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/user/me`, {
+        headers: {
+          Authorization: `Bearer ${Cookies.get("access_token")}`,
+        },
+      })
+      .then((res) => {
+        console.log(res);
+        // console.log(res.data.access_token);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+  const handleLogout = () => {
+    router.push("/signin");
   };
 
   return (
@@ -167,6 +212,14 @@ export default function Home() {
             handleChecked={handleChecked}
             handleDelete={handleDelete}
           />
+
+          <button type="submit" onClick={getUserMe}>
+            Get Me(テスト用)
+          </button>
+
+          <button type="submit" onClick={handleLogout}>
+            ログアウト
+          </button>
         </main>
       </div>
     </div>

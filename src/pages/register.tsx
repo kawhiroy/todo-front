@@ -1,6 +1,7 @@
 import axios from "axios";
 import React from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
+import { useRouter } from "next/router";
 
 type Register = {
   username: string;
@@ -14,6 +15,8 @@ export default function Register() {
     formState: { errors },
   } = useForm<Register>();
 
+  const router = useRouter();
+
   const onSubmit: SubmitHandler<Register> = async (data) => {
     console.log(data);
     const formData: Register = {
@@ -24,16 +27,21 @@ export default function Register() {
       .post(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/users/`, formData)
       .then((res) => {
         console.log(res);
+        router.push("/login");
       })
       .catch((error) => {
         console.log(error);
       });
   };
 
+  const handleTransitionLoginPage = () => {
+    router.push("/login");
+  };
+
   return (
     <>
       <div className="flex items-center justify-center min-h-screen">
-        <div className="w-96 mx-auto space-y-3 items-center justify-between rounded-lg shadow-lg">
+        <div className="w-96 mx-auto space-y-3 items-center justify-between">
           <div className="px-3 py-3">
             <h1 className="text-center text-3xl font-bold">アカウント作成</h1>
 
@@ -63,6 +71,19 @@ export default function Register() {
                 </div>
               </form>
             </div>
+          </div>
+          <div className="py-2 border-b-4 border-gray-300 ..."></div>
+
+          <div className="flex items-center justify-center flex-col ...">
+            <p className="justify-between text-center font-medium">
+              アカウントをお持ちの方
+            </p>
+            <button
+              className="text-xl py-5 font-bold"
+              onClick={handleTransitionLoginPage}
+            >
+              ログインする
+            </button>
           </div>
         </div>
       </div>
