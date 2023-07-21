@@ -6,12 +6,15 @@ import TodoItems from "@/components/TodoItems";
 import { MouseEvent, useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { Todo, UpdateTodo, CreateTodo } from "./schema";
+import { Button } from "@mui/material";
 
 export default function Home() {
   // setTextでtextを更新。初期値は空で定義
   const [text, setText] = useState<string>("");
   const [date, setDate] = useState<string>("");
   const [todos, setTodos] = useState<Todo[]>([]);
+
+  // const { sessionError } = "";
 
   // 初期画面でTodo一覧を取得
   useEffect(() => {
@@ -28,6 +31,23 @@ export default function Home() {
     }
     setText(e.target.value); //  e.target.valueで入力されたものを取り出しtextを変更
   };
+
+  // トークン有効期限切れの処理
+  axios.interceptors.response.use(
+    (res) => {
+      return res;
+    },
+    (error) => {
+      if (error.response.status === 401) {
+        alert("セッションが終了しました。 再度ログインしてください");
+        router.push("/signin");
+        return;
+        // const query = error.response.data.detail;
+        // router.push({ pathname: "signin", query: query }, "signin");
+      }
+      return Promise.reject(error);
+    }
+  );
 
   const changeDate = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
@@ -168,22 +188,6 @@ export default function Home() {
       });
   };
 
-  const getUserMe = async () => {
-    await axios
-      .get(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/user/me`, {
-        headers: {
-          Authorization: `Bearer ${Cookies.get("access_token")}`,
-        },
-      })
-      .then((res) => {
-        console.log(res);
-        // console.log(res.data.access_token);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
-
   const handleLogout = () => {
     router.push("/signin");
   };
@@ -213,13 +217,14 @@ export default function Home() {
             handleDelete={handleDelete}
           />
 
-          <button type="submit" onClick={getUserMe}>
-            Get Me(テスト用)
-          </button>
-
-          <button type="submit" onClick={handleLogout}>
+          <Button
+            type="submit"
+            variant="contained"
+            color="error"
+            onClick={handleLogout}
+          >
             ログアウト
-          </button>
+          </Button>
         </main>
       </div>
     </div>

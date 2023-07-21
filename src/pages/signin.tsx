@@ -1,4 +1,8 @@
 import * as React from "react";
+import { useState } from "react";
+import { SubmitHandler, useForm } from "react-hook-form";
+import * as yup from "yup";
+import { yupResolver } from "@hookform/resolvers/yup";
 import styled from "styled-components";
 import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
@@ -13,6 +17,7 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
+import Alert from "@mui/material/Alert";
 import axios from "axios";
 import { useRouter } from "next/router";
 import Cookies from "js-cookie";
@@ -33,7 +38,19 @@ type AccountData = {
   password: string;
 };
 
-let config = {
+// バリデーションルール
+const schema = yup.object({
+  username: yup
+    .string()
+    .required("必須項目です")
+    .max(20, "20文字以内で設定してください"),
+  password: yup
+    .string()
+    .required("必須項目です")
+    .min(6, "6文字以上で設定してください"),
+});
+
+const config = {
   headers: {
     "Content-Type": "application/x-www-form-urlencoded",
   },
@@ -41,17 +58,23 @@ let config = {
 
 export default function SignIn() {
   const router = useRouter();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  // const { sessionError } = router.query;
 
-  const handleSubmit = async (event: any) => {
-    event.preventDefault();
-    const username = event.currentTarget.elements.namedItem("username").value;
-    const password = event.currentTarget.elements.namedItem("password").value;
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<AccountData>({
+    resolver: yupResolver(schema),
+  });
 
+  const onSubmit: SubmitHandler<AccountData> = async (data) => {
     const accountData: AccountData = {
-      username: username,
-      password: password,
+      username: data.username,
+      password: data.password,
     };
-    console.log(accountData);
+    // console.log(accountData);
 
     await axios
       .post(
@@ -66,17 +89,21 @@ export default function SignIn() {
         const access_token = res.data.access_token;
 
         // CookieにJWTトークンをセット
-        Cookies.set("access_token", access_token, { httpOnly: true });
+        Cookies.set("access_token", access_token);
         if (accessToken) {
-          const cookie = Cookies.get("access_token");
           router.push("/");
-          console.log(cookie);
+          // const cookie = Cookies.get("access_token");
+          // console.log(cookie);
           return;
         }
         return console.log("accessToken nothing");
       })
       .catch((error) => {
         console.log(error);
+        if (axios.isAxiosError(error) && error.response) {
+          return setErrorMessage(error.response.data.detail);
+        }
+        return setErrorMessage("An unexpected error occurred.");
       });
   };
 
@@ -92,6 +119,12 @@ export default function SignIn() {
             alignItems: "center",
           }}
         >
+          {errorMessage !== null && (
+            <Alert severity="error">{errorMessage}</Alert>
+          )}
+          {/* {sessionError !== undefined && (
+            <Alert severity="error">{sessionError}</Alert>
+          )} */}
           <Avatar sx={{ m: 1, bgcolor: "secondary.main" }}>
             <LockOutlinedIcon />
           </Avatar>
@@ -100,7 +133,7 @@ export default function SignIn() {
           </Typography>
           <Box
             component="form"
-            onSubmit={handleSubmit}
+            onSubmit={handleSubmit(onSubmit)}
             noValidate
             sx={{ mt: 1 }}
           >
@@ -110,7 +143,9 @@ export default function SignIn() {
               fullWidth
               id="username"
               label="ユーザー名"
-              name="username"
+              {...register("username")}
+              error={"username" in errors}
+              helperText={errors.username?.message}
               autoComplete="username"
               autoFocus
             />
@@ -118,8 +153,10 @@ export default function SignIn() {
               margin="normal"
               required
               fullWidth
-              name="password"
               label="パスワード"
+              {...register("password")}
+              error={"password" in errors}
+              helperText={errors.password?.message}
               type="password"
               id="password"
               autoComplete="current-password"
